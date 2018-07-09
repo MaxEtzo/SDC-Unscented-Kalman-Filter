@@ -12,7 +12,6 @@ using Eigen::VectorXd;
 
 class UKF {
 	private:
-		/// Weights in Identity format
 		MatrixXd weights_I;
 		/**
 		 * AugmentedSigmaPoints generates augmented sigma points
@@ -28,14 +27,7 @@ class UKF {
 		 */
 		void SigmaPointsPrediction(double delta_t, MatrixXd Xsig_aug, MatrixXd* Xsig_out);
 
-		/**
-		 * PredictRadarMeasurement predicts radar measurement
-		 * @param z_out pointer for predicted radar state
-		 * @param Zsig_out pointer for sigma points in radar space
-		 * @param Zerr_out pointer for error matrix in radar space
-		 * @param S_out pointer for measurement covariance matrix 
-		 */
-		void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* Zsig_out, MatrixXd* Zerr_out, MatrixXd* S_out);
+		void PredictRadarMeasurement(MatrixXd Xsig_pred
 	public:
 
 		///* initially set to false, set to true in first call of ProcessMeasurement
@@ -85,7 +77,7 @@ class UKF {
 
 		///* State dimension
 		int n_x_;
-		
+
 		///* Augmented state dimension
 		int n_aug_;
 
