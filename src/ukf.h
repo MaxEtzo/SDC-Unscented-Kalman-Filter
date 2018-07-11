@@ -12,30 +12,14 @@ using Eigen::VectorXd;
 
 class UKF {
 	private:
-		/// Weights in Identity format
+		///* Weights in Identity format
 		MatrixXd weights_I;
-		/**
-		 * AugmentedSigmaPoints generates augmented sigma points
-		 * @param Xsig_out a pointer for result augmented sigma points
-		 */
-		void AugmentedSigmaPoints(MatrixXd* Xsig_out); 
+        
+        ///* Output file stream for lidar NIS values
+        std::ofstream lidar_NIS;
 
-		/**
-		 * SigmaPointsPrediction assigns predicted sigma points
-		 * @param delta_t Time between k and k+1 in s
-		 * @param Xsig_aug augmented sigma points 
-		 * @param Xsig_out a pointer for result predicted sigma points
-		 */
-		void SigmaPointsPrediction(double delta_t, MatrixXd Xsig_aug, MatrixXd* Xsig_out);
-
-		/**
-		 * PredictRadarMeasurement predicts radar measurement
-		 * @param z_out pointer for predicted radar state
-		 * @param Zsig_out pointer for sigma points in radar space
-		 * @param Zerr_out pointer for error matrix in radar space
-		 * @param S_out pointer for measurement covariance matrix 
-		 */
-		void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* Zsig_out, MatrixXd* Zerr_out, MatrixXd* S_out);
+        ///* Output file stream for radar NIS values
+        std::ofstream radar_NIS;
 	public:
 
 		///* initially set to false, set to true in first call of ProcessMeasurement
@@ -56,7 +40,10 @@ class UKF {
 		///* predicted sigma points matrix
 		MatrixXd Xsig_pred_;
 
-		///* time when the state is true, in us
+	    ///* predicted sigma points error	
+        MatrixXd Xsig_err_;
+        
+        ///* time when the state is true, in us
 		long long time_us_;
 
 		///* Process noise standard deviation longitudinal acceleration in m/s^2
@@ -80,14 +67,23 @@ class UKF {
 		///* Radar measurement noise standard deviation radius change in m/s
 		double std_radrd_ ;
 
+        ///* Radar measurement covariance matrix
+        MatrixXd R_radar_;
+        
+        ///* Laser measurement covariance matrix
+        MatrixXd R_laser_;
+
 		///* Weights of sigma points
 		VectorXd weights_;
 
 		///* State dimension
 		int n_x_;
-		
+
 		///* Augmented state dimension
 		int n_aug_;
+
+		///* Number of sigma points
+		int n_sig_;
 
 		///* Sigma point spreading parameter
 		double lambda_;
@@ -126,6 +122,31 @@ class UKF {
 		 * @param meas_package The measurement at k+1
 		 */
 		void UpdateRadar(MeasurementPackage meas_package);
+
+        /**
+         * UpdateCommon common update steps for both radar and lidar
+         * @param meas_package measurement package (either radar or lidar)
+         * @param Z_pred predicted state 
+         */
+        void UpdateCommon(MeasurementPackage meas_package, MatrixXd Z_pred);
+
+        /**
+         * AugmentedSigmaPoints returns augmented sigma points
+         * @param Xsig_out a pointer for result augmented sigma points
+         */
+        void AugmentedSigmaPoints(MatrixXd* Xsig_out);
+
+        /**
+         * SigmaPointsPrediction assigns predicted sigma points
+         * @param delta_t Time between k and k+1 in s
+         * @param Xsig_in augmented sigma points 
+         */
+        void PredictSigmaPoints(double delta_t, MatrixXd Xsig_in); 
+
+        /**
+         * A helper method to normalize angle between -M_PI and M_PI
+         */
+        double NormalizeAngle(double A);
 };
 
 #endif /* UKF_H */
